@@ -78,3 +78,19 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 uvicorn app.main:app --reload
+
+### 2️⃣ Worker (Required for background tasks)
+
+```bash
+cd backend
+# Make sure redis-server is running or USE_FAKE_REDIS=True in .env
+celery -A app.worker.celery_app worker --loglevel=info
+```
+
+### 3️⃣ Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
