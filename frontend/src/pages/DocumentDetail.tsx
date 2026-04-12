@@ -49,7 +49,8 @@ export default function DocumentDetail() {
     let eventSource: EventSource | null = null;
 
     if (active) {
-      eventSource = new EventSource(`/api/documents/${doc.id}/progress/stream`);
+      const baseUrl = (import.meta.env.VITE_API_URL || "") + "/api";
+      eventSource = new EventSource(`${baseUrl}/documents/${doc.id}/progress/stream`);
       
       eventSource.onmessage = (event) => {
         try {
