@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     USE_FAKE_REDIS: bool = True
 
     class Config:
-        env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
+        # From backend/app/config.py, go up to backend/ folder
+        env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 
 
 settings = Settings()

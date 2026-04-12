@@ -16,7 +16,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://docflow-frontend.vercel.app", 
+        "https://doc-flow-five-delta.vercel.app",
         "https://docflow-1-3q7p.onrender.com"
     ],
     allow_credentials=True,

@@ -42,6 +42,8 @@ async def upload_documents(
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
     for file in files:
+        if not file.filename:
+            raise HTTPException(400, "File filename is missing")
         ext = os.path.splitext(file.filename)[1].lower()
         if ext not in ALLOWED_TYPES.values():
             raise HTTPException(400, f"File extension {ext} is not supported")
