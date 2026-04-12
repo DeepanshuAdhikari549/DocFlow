@@ -9,14 +9,19 @@ from app.config import settings
 if settings.USE_FAKE_REDIS:
     import fakeredis
     _fake_server = fakeredis.FakeServer()
-
-    def get_redis():
-        return fakeredis.FakeRedis(server=_fake_server)
-
     redis_client = fakeredis.FakeRedis(server=_fake_server)
+    def get_redis(): return redis_client
 else:
     import redis as _redis
-    redis_client = _redis.from_url(settings.REDIS_URL)
+    try:
+        redis_client = _redis.from_url(settings.REDIS_URL, socket_timeout=5)
+        # Testing connection
+        redis_client.ping()
+        print("✅ Redis connected successfully")
+    except Exception as e:
+        print(f"⚠️ Redis connection failed: {e}. Falling back to Fakeredis.")
+        import fakeredis
+        redis_client = fakeredis.FakeRedis()
 
     def get_redis():
-        return _redis.from_url(settings.REDIS_URL)
+        return redis_client
