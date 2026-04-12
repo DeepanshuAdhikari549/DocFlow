@@ -1,7 +1,13 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from .database import create_tables
-from .routers import documents
+import os
+from .config import settings
+
+# --- SAFE STARTUP ---
+try:
+    _upload_dir = getattr(settings, "UPLOAD_DIR", "/tmp/uploads")
+    os.makedirs(_upload_dir, exist_ok=True)
+    print(f"✅ Upload directory ready at: {_upload_dir}")
+except Exception as e:
+    print(f"⚠️ Directory fallback: {e}")
 
 app = FastAPI(
     title="DocFlow — Async Document Processing API",
@@ -22,7 +28,12 @@ app.include_router(documents.router)
 
 @app.on_event("startup")
 def on_startup():
-    create_tables()
+    print("🚀 App starting up...")
+    try:
+        create_tables()
+        print("✅ Database tables checked")
+    except Exception as e:
+        print(f"⚠️ Database sync failed (continuing anyway): {e}")
 
 
 @app.get("/")
