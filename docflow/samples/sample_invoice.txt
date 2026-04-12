@@ -1,0 +1,6 @@
+This is a sample invoice document for testing the DocFlow system.
+Date: 2024-03-12
+Amount: $1,250.00
+Vendor: Global Tech Solutions
+Description: Monthly Cloud Infrastructure Services for March 2024.
+Please process this payment before the end of the week.

@@ -1,0 +1,16 @@
+{
+  "id": "demo-doc-id-12345",
+  "original_filename": "sample_invoice.txt",
+  "status": "finalized",
+  "finalized_at": "2024-03-12T10:30:00Z",
+  "data": {
+    "title": "Sample Invoice",
+    "category": "Invoice",
+    "summary": "This document is a sample invoice for Global Tech Solutions.",
+    "extracted_keywords": ["invoice", "payment", "cloud"],
+    "confidence_score": 0.98,
+    "language": "English",
+    "word_count": 120,
+    "page_count": 1
+  }
+}
