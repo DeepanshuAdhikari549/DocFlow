@@ -8,8 +8,7 @@ It uses FastAPI, Celery, Redis, and React to provide a smooth and scalable exper
 
 ## 🌐 Live Demo
 
-👉 Frontend: https://doc-flow-five-delta.vercel.app  
-👉 Backend API: https://docflow-api.onrender.com/docs  
+👉 Frontend: https://doc-flow-five-delta.vercel.app   
 
 ---
 
