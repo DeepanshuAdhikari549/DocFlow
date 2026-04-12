@@ -1,4 +1,8 @@
 import os
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from .database import create_tables
+from .routers import documents
 from .config import settings
 
 # --- SAFE STARTUP ---
