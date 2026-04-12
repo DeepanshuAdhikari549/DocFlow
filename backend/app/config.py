@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     UPLOAD_DIR: str = "./uploads"
     USE_FAKE_REDIS: bool = True
+    FRONTEND_URL: str = "http://localhost:5173"
+    BACKEND_URL: str = "http://localhost:8000"
 
     class Config:
         # From backend/app/config.py, go up to backend/ folder
