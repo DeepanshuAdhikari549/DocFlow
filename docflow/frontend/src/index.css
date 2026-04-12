@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-slate-800 antialiased min-h-screen bg-slate-50;
+    /* subtle background pattern with soft gradients */
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(210, 100%, 95%, 1) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(220, 100%, 97%, 1) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, hsla(205, 100%, 95%, 1) 0, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-sm rounded-2xl;
+  }
+}
