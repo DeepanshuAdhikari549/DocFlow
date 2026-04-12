@@ -9,7 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from .celery_app import celery_app
 from app.redis_client import redis_client
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./docflow.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./docflow.db?timeout=30")
 
 # each worker process gets its own DB session
 _connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}

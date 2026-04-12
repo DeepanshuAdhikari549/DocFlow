@@ -1,14 +1,15 @@
+import os
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./docflow.db"
+    DATABASE_URL: str = "sqlite:///./docflow.db?timeout=30"
     REDIS_URL: str = "redis://localhost:6379/0"
     UPLOAD_DIR: str = "./uploads"
-    USE_FAKE_REDIS: bool = False
+    USE_FAKE_REDIS: bool = True
 
     class Config:
-        env_file = ".env"
+        env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
 
 
 settings = Settings()

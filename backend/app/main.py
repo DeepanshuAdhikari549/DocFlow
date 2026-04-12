@@ -13,8 +13,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://127.0.0.1:5173",
         "http://localhost:3000",
-        "https://docflow-frontend.vercel.app", # Add explicit origins
+        "http://127.0.0.1:3000",
+        "https://docflow-frontend.vercel.app", 
         "https://docflow-1-3q7p.onrender.com"
     ],
     allow_credentials=True,

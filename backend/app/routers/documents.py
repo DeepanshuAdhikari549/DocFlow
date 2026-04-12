@@ -42,8 +42,9 @@ async def upload_documents(
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
     for file in files:
-        if file.content_type not in ALLOWED_TYPES:
-            raise HTTPException(400, f"File type {file.content_type} is not supported")
+        ext = os.path.splitext(file.filename)[1].lower()
+        if ext not in ALLOWED_TYPES.values():
+            raise HTTPException(400, f"File extension {ext} is not supported")
 
         doc_id = str(uuid.uuid4())
         ext = os.path.splitext(file.filename)[1] or ".bin"
