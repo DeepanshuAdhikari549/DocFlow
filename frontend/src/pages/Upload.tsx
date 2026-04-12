@@ -64,7 +64,8 @@ export default function Upload() {
       await uploadDocuments(files);
       navigate("/dashboard");
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "Upload failed. Please try again.");
+      const msg = err?.response?.data?.detail || err?.message || "Upload failed. Please try again.";
+      setError(msg);
     } finally {
       setUploading(false);
     }

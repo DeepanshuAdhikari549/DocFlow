@@ -9,9 +9,7 @@ const api = axios.create({
 export const uploadDocuments = async (files: File[]): Promise<Document[]> => {
   const form = new FormData();
   files.forEach((f) => form.append("files", f));
-  const res = await api.post<Document[]>("/documents/upload", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const res = await api.post<Document[]>("/documents/upload", form);
   return res.data;
 };
 
