@@ -81,6 +81,7 @@ def extract_mock_data(filename: str, file_type: str, file_size: int) -> dict:
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=10)
 def process_document(self, document_id: str):
+    print(f"Starting processing for document {document_id}")
     db = WorkerSession()
     try:
         from app.models import Document
