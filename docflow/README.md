@@ -2,204 +2,120 @@
 
 A full-stack application for uploading documents, processing them asynchronously via Celery workers, and tracking real-time progress using Redis Pub/Sub.
 
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + TypeScript + Vite + Tailwind CSS |
-| Backend | Python + FastAPI |
-| Database | PostgreSQL |
-| Task Queue | Celery |
-| Broker / Pub-Sub | Redis |
-| Containerisation | Docker + Docker Compose |
+**GitHub Repository:** [https://github.com/DeepanshuAdhikari549/DocFlow](https://github.com/DeepanshuAdhikari549/DocFlow)
 
 ---
 
-## Architecture Overview
+## 🏗️ Architecture Overview
+
+The system is designed with a decoupled, event-driven architecture to ensure the request-response cycle is never blocked by heavy processing.
 
 ```
-Browser
-  │
-  ├── GET/POST /api/*  ──►  FastAPI (port 8000)
-  │                              │
-  │                              ├── PostgreSQL (state + results)
-  │                              └── Redis (Celery broker + Pub/Sub)
-  │                                        │
-  │                              Celery Worker
-  │                              (background processing)
-  │                              publishes events → Redis channel job:{id}
-  │
-  └── SSE /api/documents/{id}/progress/stream
-        subscribes to Redis Pub/Sub for live updates
+[ Browser ] 
+     │
+     ├── (1) HTTP POST /upload  ──► [ FastAPI ] ──► [ PostgreSQL ] (Create Job)
+     │                                 │
+     │                           (2) .delay() ──► [ Redis Broker ]
+     │                                                     │
+[ Dashboard ]                                       [ Celery Worker ]
+     │                                            (Processing logic)
+     │                                                     │
+     ├── (3) SSE /progress/stream ◄── [ Redis Pub/Sub ] ◄──┘ (Status Events)
 ```
 
-### Processing Pipeline
-
-Each uploaded document goes through 7 stages, each published as a Redis Pub/Sub event:
-
-```
-job_queued → job_started → document_parsing_started → document_parsing_completed
-→ field_extraction_started → field_extraction_completed → job_completed / job_failed
-```
+### Key Components:
+- **FastAPI:** Handles synchronous API requests and dispatches tasks.
+- **PostgreSQL:** Persistent storage for document metadata and extracted results.
+- **Celery:** Asynchronous task worker for handling the document processing pipeline.
+- **Redis:** Serves dual-purpose as the Celery message broker and the real-time Pub/Sub layer for progress events.
+- **SSE (Server-Sent Events):** Provides a persistent connection from server to client to stream progress updates directly from Redis Pub/Sub.
 
 ---
 
-## Running with Docker (Recommended — One Command)
+## 🚀 Setup & Run Steps
 
-### Prerequisites
-- Docker Desktop installed and running
+### Option A: Running with Docker (Recommended)
+This is the fastest way to get all services (Postgres, Redis, Backend, Worker, Frontend) running with a single command.
+
+**Prerequisites:** Docker Desktop installed.
 
 ```bash
-# Clone / unzip the project
-cd docflow
+# Clone the repository
+git clone https://github.com/DeepanshuAdhikari549/DocFlow.git
+cd DocFlow
 
 # Build and start all services
 docker compose up --build
 
-# Open browser
+# Access the application:
 # Frontend:  http://localhost:5173
-# API docs:  http://localhost:8000/docs
+# API Docs:  http://localhost:8000/docs
 ```
 
-To stop:
-```bash
-docker compose down
-```
+### Option B: Manual Setup (Local Development)
+**Prerequisites:** Python 3.11+, Node.js 18+, Redis, and PostgreSQL.
 
-To wipe all data:
-```bash
-docker compose down -v
-```
+1. **Database:** Create a database named `docflow` owned by `docuser`.
+2. **Backend:**
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate # Windows: .\venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   # Ensure .env is configured correctly
+   python -m uvicorn app.main:app --reload
+   ```
+3. **Worker:** (In a new terminal)
+   ```bash
+   cd backend
+   source venv/bin/activate
+   celery -A app.worker.celery_app worker --loglevel=info
+   ```
+4. **Frontend:** (In a new terminal)
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
 ---
 
-## Running Manually (Without Docker)
-
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL running on port 5432
-- Redis running on port 6379
-
-### 1. PostgreSQL Setup
-
-```sql
--- run in psql
-CREATE USER docuser WITH PASSWORD 'docpass';
-CREATE DATABASE docflow OWNER docuser;
-```
-
-### 2. Backend Setup
-
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Create environment file
-cp .env.example .env
-# Edit .env if your DB/Redis settings differ
-
-# Start FastAPI server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### 3. Start Celery Worker (new terminal)
-
-```bash
-cd backend
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# Set env vars
-export DATABASE_URL=postgresql://docuser:docpass@localhost:5432/docflow
-export REDIS_URL=redis://localhost:6379/0
-
-celery -A app.worker.celery_app worker --loglevel=info --concurrency=4
-```
-
-### 4. Frontend Setup (new terminal)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Open http://localhost:5173
+## ✨ Features
+- **Multi-file Upload:** Batch upload support with validation.
+- **Real-time Tracking:** Visual progress bar updated via Redis Pub/Sub events.
+- **Document Pipeline:** 7-stage simulated extraction (Parsing -> Extraction -> Storage).
+- **CRUD Operations:** Support for Listing, Filtering, Searching, and **Deleting** documents.
+- **Review Workflow:** Edit extracted fields and **Finalize** documents to lock data.
+- **Exporting:** Download finalized data as **JSON** or **CSV**.
+- **Resilience:** Idempotent retry mechanism for failed processing jobs.
+- **Timezone Aware:** UI displays "time ago" relative to the user's local clock.
 
 ---
 
-## API Endpoints
+## 📝 Assumptions, Tradeoffs & Limitations
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/documents/upload | Upload one or more files |
-| GET | /api/documents | List all documents (search, filter, sort) |
-| GET | /api/documents/{id} | Get document details |
-| GET | /api/documents/{id}/progress | Polling progress endpoint |
-| GET | /api/documents/{id}/progress/stream | SSE live progress stream |
-| POST | /api/documents/{id}/retry | Retry a failed job |
-| PUT | /api/documents/{id}/review | Update reviewed/edited output |
-| POST | /api/documents/{id}/finalize | Finalize a completed document |
-| GET | /api/documents/{id}/export?format=json | Export as JSON |
-| GET | /api/documents/{id}/export?format=csv | Export as CSV |
+### Assumptions:
+- **Simulated Logic:** As per the assignment guidelines, the actual text extraction is simulated with logic that gauges word/page counts based on file size.
+- **Public Access:** The system assumes a trusted environment (no Auth implemented as it was a bonus feature).
 
-Full interactive docs: http://localhost:8000/docs
+### Tradeoffs:
+- **SQLite vs Postgres:** Locally, the app uses SQLite for ease of setup; however, the Docker configuration is fully production-ready with PostgreSQL.
+- **SSE vs WebSockets:** SSE was chosen for progress tracking as it is lighter-weight and unidirectional, which perfectly fits the "worker-to-browser" event flow.
+- **Local Storage:** Files are stored on the local filesystem. In a distributed cloud environment, this would be replaced by an S3 bucket.
 
----
-
-## Features
-
-- Upload one or more documents simultaneously
-- Background processing via Celery (NOT inside the request handler)
-- Redis Pub/Sub publishes 7 progress events per job
-- Live progress tracking via Server-Sent Events (SSE) + polling fallback
-- Job dashboard with search, status filter, and sort
-- Delete functionality (removes document from DB and physical file from disk)
-- Document detail page with step-by-step pipeline visualization
-- Inline editing of extracted fields before finalization
-- One-click finalize to lock the reviewed output
-- Export finalized records as JSON or CSV
-- Retry support for failed jobs
-- Timezone-aware UI (correctly calculates "time ago" regardless of server/client offset)
+### Limitations:
+- **No OCR:** Does not physically "read" text from images/PDFs (mocked extraction).
+- **Memory Broker:** When running without Redis locally, it falls back to an in-memory broker (FakeRedis), though real Redis is required for the full async experience.
+- **Pagination:** The dashboard displays the last 50 documents; full pagination is not implemented in this version.
 
 ---
 
-## Assumptions & Tradeoffs
-
-- **Processing logic is simulated** — the assignment explicitly states this is acceptable. The async architecture (Celery + Redis Pub/Sub) is fully real.
-- **Live updates** on the detail page use the SSE endpoint at `/progress/stream`.
-- **No authentication** — implementing auth was listed as a bonus, not required.
-- **Single-node Celery** — uses `concurrency=4` workers. In production this would be scaled horizontally.
-- **File storage is local disk** — a production system would use S3 or similar object storage.
+## 🧪 Testing Samples
+I have included a `samples/` directory in the root:
+- `samples/sample_invoice.txt` & `sample_report.txt`: Use these for demo uploads.
+- `samples/exports/`: Contains example JSON output of a finalized document.
 
 ---
 
-## Limitations
-
-- No OCR / real text extraction (mocked as per assignment instructions)
-- No file size enforcement on the backend (only frontend validation)
-- No pagination on dashboard (limit 50, sufficient for demo)
-- SSE streams disconnect on job completion (by design)
-
----
-
-## Bonus Features Implemented
-
-- Docker Compose setup (one-command startup)
-- Nginx reverse proxy for frontend production build
-- Idempotent retry handling with retry count tracking
-- Redis key TTL for progress cache (5 minutes)
-
----
-
-## Notes on AI Tool Usage
-
-AI tools were used to assist with boilerplate code generation and debugging. All architecture decisions, system design, and core implementation logic were written and reviewed manually.
+## 🤖 AI Tool Usage Note
+AI tools (Antigravity/Gemini) were utilized to accelerate development, specifically for boilerplate setup, UI styling refinements, and bug debugging. All core architectural decisions and Redis Pub/Sub integration logic were manually designed.
