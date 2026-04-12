@@ -30,6 +30,23 @@ def root():
     return {"message": "DocFlow API is running", "docs": "/docs"}
 
 
+from app.redis_client import redis_client
+from app.config import settings
+
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    try:
+        # Check Redis connectivity
+        redis_client.ping()
+        redis_status = "ok"
+    except Exception as e:
+        redis_status = f"error: {str(e)}"
+    
+    db_type = "postgresql" if "postgresql" in settings.DATABASE_URL else "sqlite"
+    
+    return {
+        "status": "ok",
+        "redis": redis_status,
+        "database": db_type,
+        "environment": "production" if not settings.USE_FAKE_REDIS else "development"
+    }
