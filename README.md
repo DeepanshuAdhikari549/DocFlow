@@ -8,8 +8,11 @@ It uses FastAPI, Celery, Redis, and React to provide a smooth and scalable exper
 
 ## 🌐 Live Demo
 
+<<<<<<< HEAD
 - **Frontend:** [https://doc-flow-amber.vercel.app](https://doc-flow-amber.vercel.app)
 - **Backend API:** [https://docflow-1-zzs8.onrender.com](https://docflow-1-zzs8.onrender.com)
+=======
+>>>>>>> d194697cecb0ffd0eabfe7f1b59baaed06d924d4
 
 ---
 
