@@ -10,6 +10,12 @@ from app.config import settings
 from .celery_app import celery_app
 from app.redis_client import redis_client
 
+_is_free_tier = os.getenv("RENDER_FREE_TIER", "False").lower() == "true"
+
+def maybe_sleep(seconds: float):
+    if not _is_free_tier:
+        time.sleep(seconds)
+
 # each worker process gets its own DB session
 _connect_args = {}
 if settings.DATABASE_URL.startswith("sqlite"):
@@ -101,12 +107,12 @@ def process_document(self, document_id: str):
             "current_stage": "job_started",
         })
         publish_event(document_id, "job_started", 5, "job_started", "Job picked up by worker")
-        time.sleep(1)
+        maybe_sleep(1)
 
         # --- Stage 2: parsing started ---
         update_doc_in_db(db, document_id, {"progress": 20, "current_stage": "document_parsing_started"})
         publish_event(document_id, "document_parsing_started", 20, "document_parsing_started", "Parsing document content...")
-        time.sleep(2)
+        maybe_sleep(2)
 
         # simulate occasional failure for demo (5% chance) — skip in retry
         if doc.retry_count == 0 and random.random() < 0.05:
@@ -115,19 +121,19 @@ def process_document(self, document_id: str):
         # --- Stage 3: parsing completed ---
         update_doc_in_db(db, document_id, {"progress": 45, "current_stage": "document_parsing_completed"})
         publish_event(document_id, "document_parsing_completed", 45, "document_parsing_completed", "Document parsed successfully")
-        time.sleep(1.5)
+        maybe_sleep(1.5)
 
         # --- Stage 4: extraction started ---
         update_doc_in_db(db, document_id, {"progress": 60, "current_stage": "field_extraction_started"})
         publish_event(document_id, "field_extraction_started", 60, "field_extraction_started", "Extracting structured fields...")
-        time.sleep(2)
+        maybe_sleep(2)
 
         # --- Stage 5: generate extracted data ---
         extracted = extract_mock_data(doc.original_filename, doc.file_type or "", doc.file_size or 0)
 
         update_doc_in_db(db, document_id, {"progress": 85, "current_stage": "field_extraction_completed"})
         publish_event(document_id, "field_extraction_completed", 85, "field_extraction_completed", "Fields extracted")
-        time.sleep(1)
+        maybe_sleep(1)
 
         # --- Stage 6: store result & complete ---
         update_doc_in_db(db, document_id, {

@@ -1,99 +1,88 @@
 # 🚀 DocFlow — Async Document Processing
 
-DocFlow is a full-stack document processing system that allows users to upload documents, process them in the background, and track progress in real-time.
-
-It uses FastAPI, Celery, Redis, and React to provide a smooth and scalable experience.
+DocFlow is a high-performance, full-stack document processing system. It allows users to upload multiple documents, process them asynchronously using Celery and Redis, and monitor progress in real-time through Server-Sent Events (SSE).
 
 ---
 
 ## 🌐 Live Demo
 
-<<<<<<< HEAD
 - **Frontend:** [https://doc-flow-amber.vercel.app](https://doc-flow-amber.vercel.app)
 - **Backend API:** [https://docflow-1-zzs8.onrender.com](https://docflow-1-zzs8.onrender.com)
-=======
->>>>>>> d194697cecb0ffd0eabfe7f1b59baaed06d924d4
 
 ---
 
-## 🧠 What Problem It Solves
+## 🧠 The Problem & Solution
 
-In many applications, document processing takes time (like OCR or data extraction).  
-If handled directly, users have to wait, which leads to a poor experience.
+In modern web apps, heavy tasks like OCR, PDF parsing, or data extraction shouldn't block the main thread. 
 
-DocFlow solves this by:
-- Running processing in the background  
-- Showing real-time progress updates  
-- Allowing users to review and export results  
+**DocFlow solves this by:**
+- **Decoupled Architecture**: Fast API handles requests instantly while Celery handles the heavy lifting.
+- **Real-time Feedback**: Using Redis Pub/Sub and SSE, the UI updates as soon as the worker finishes a stage.
+- **Robust Storage**: Uploads are handled via `/tmp` fallbacks for serverless environments and persisted in a relational database.
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### 🔹 Backend
-- FastAPI — Fast and async API handling  
-- Celery — Background task processing  
-- Redis — Message broker + real-time communication  
-- PostgreSQL — Production-grade relational database  
+- **FastAPI**: Modern, high-performance Python framework.
+- **Celery**: Distributed task queue for asynchronous processing.
+- **Redis**: ultra-fast message broker and progress cache.
+- **PostgreSQL**: Production-grade relational storage.
 
 ### 🔹 Frontend
-- React — UI development  
-- Vite — Fast build tool  
-- Tailwind CSS — Styling  
+- **React 18**: Component-based UI with hooks for state management.
+- **Vite**: Next-generation frontend tooling.
+- **Tailwind CSS**: Utility-first styling for a sleek, responsive design.
 
-### 🔹 Deployment
-- Vercel — Frontend hosting  
-- Render — Backend + Worker hosting  
-- Upstash — Managed Serverless Redis  
-
----
-
-## ⚙️ How It Works (Simple Flow)
-
-1. User uploads document  
-2. FastAPI receives file and creates a job  
-3. Celery worker processes the document  
-4. Redis sends progress updates  
-5. Frontend receives updates using SSE  
-6. User reviews and exports the result  
+### 🔹 Infrastructure
+- **Vercel**: Global edge hosting for the frontend.
+- **Render**: Managed hosting for the API and Workers.
+- **Upstash**: Serverless Redis for global low-latency messaging.
 
 ---
 
 ## ✨ Features
 
-- ✅ Real-time progress tracking  
-- ✅ Background document processing  
-- ✅ Batch upload support  
-- ✅ Editable extracted data  
-- ✅ Export as JSON / CSV  
-- ✅ Clean and responsive UI  
+- ✅ **Real-Time Tracking**: Watch documents progress from "Queued" to "Completed" live.
+- ✅ **Batch Processing**: Upload multiple files simultaneously without slowdowns.
+- ✅ **Interactive Review**: Edit extracted fields directly in the UI before finalizing.
+- ✅ **Data Portability**: Export your processed results in **JSON** or **CSV** formats.
+- ✅ **Modern UI**: Dark-mode inspired, responsive design with smooth transitions.
 
 ---
 
-## 🚀 Run Locally
+## 🚀 Local Development
 
-### 1️⃣ Backend
-
+### 1️⃣ Backend Setup
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+# Windows
+.\venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
+
 pip install -r requirements.txt
-
 uvicorn app.main:app --reload
+```
 
-### 2️⃣ Worker (Required for background tasks)
-
+### 2️⃣ Worker Setup
 ```bash
+# In a new terminal
 cd backend
-# Make sure redis-server is running or USE_FAKE_REDIS=True in .env
+# Runs tasks if REDIS_URL is configured, or use USE_FAKE_REDIS=True for local testing
 celery -A app.worker.celery_app worker --loglevel=info
 ```
 
-### 3️⃣ Frontend
-
+### 3️⃣ Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+---
+
+## 📄 License
+Distributed under the MIT License. See `LICENSE` for more information.
