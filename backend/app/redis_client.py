@@ -14,7 +14,17 @@ if settings.USE_FAKE_REDIS:
 else:
     import redis as _redis
     try:
-        redis_client = _redis.from_url(settings.REDIS_URL, socket_timeout=5)
+        # Masked logging for debugging
+        if "@" in settings.REDIS_URL:
+            parts = settings.REDIS_URL.split("@")
+            print(f"connecting to redis: {parts[0][:12]}...@{parts[1]}")
+        
+        # ssl_cert_reqs=None is often needed for Upstash
+        redis_client = _redis.from_url(
+            settings.REDIS_URL, 
+            socket_timeout=5,
+            ssl_cert_reqs=None
+        )
         # Testing connection
         redis_client.ping()
         print("✅ Redis connected successfully")

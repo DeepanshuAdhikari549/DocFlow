@@ -11,7 +11,12 @@ from .celery_app import celery_app
 from app.redis_client import redis_client
 
 # each worker process gets its own DB session
-_connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+_connect_args = {}
+if settings.DATABASE_URL.startswith("sqlite"):
+    _connect_args["check_same_thread"] = False
+elif "postgresql" in settings.DATABASE_URL:
+    _connect_args["sslmode"] = "require"
+
 engine = create_engine(settings.DATABASE_URL, connect_args=_connect_args)
 WorkerSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

@@ -8,7 +8,8 @@ It uses FastAPI, Celery, Redis, and React to provide a smooth and scalable exper
 
 ## 🌐 Live Demo
 
-👉 Frontend: https://doc-flow-five-delta.vercel.app   
+- **Frontend:** [https://doc-flow-amber.vercel.app](https://doc-flow-amber.vercel.app)
+- **Backend API:** [https://docflow-1-zzs8.onrender.com](https://docflow-1-zzs8.onrender.com)
 
 ---
 
@@ -30,7 +31,7 @@ DocFlow solves this by:
 - FastAPI — Fast and async API handling  
 - Celery — Background task processing  
 - Redis — Message broker + real-time communication  
-- SQLite — Lightweight database (can switch to PostgreSQL)
+- PostgreSQL — Production-grade relational database  
 
 ### 🔹 Frontend
 - React — UI development  
@@ -40,7 +41,7 @@ DocFlow solves this by:
 ### 🔹 Deployment
 - Vercel — Frontend hosting  
 - Render — Backend + Worker hosting  
-- Redis Cloud — Managed Redis  
+- Upstash — Managed Serverless Redis  
 
 ---
 
