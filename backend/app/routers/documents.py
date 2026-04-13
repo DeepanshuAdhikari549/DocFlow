@@ -3,7 +3,7 @@ import uuid
 import json
 import csv
 import io
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query, BackgroundTasks
 from fastapi.responses import StreamingResponse, JSONResponse
 from sqlalchemy.orm import Session
 from typing import Optional, List
@@ -32,6 +32,7 @@ ALLOWED_TYPES = {
 
 @router.post("/upload", response_model=List[schemas.DocumentResponse], status_code=201)
 async def upload_documents(
+    background_tasks: BackgroundTasks,
     files: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
 ):
@@ -70,9 +71,17 @@ async def upload_documents(
             "current_stage": "job_queued",
         })
 
-        # dispatch Celery task
-        task = process_document.delay(doc_id)
-        crud.update_document(db, doc_id, {"celery_task_id": task.id})
+        # --- DISPATCH LOGIC ---
+        _is_free = os.getenv("RENDER_FREE_TIER", "False").lower() == "true"
+        if settings.USE_FAKE_REDIS or _is_free:
+            # Use FastAPI background task for instant response on free tier
+            background_tasks.add_task(process_document, doc_id)
+            print(f"📡 Dispatched background task for {doc_id}")
+        else:
+            # Use real Celery for paid/scalable tiers
+            task = process_document.delay(doc_id)
+            crud.update_document(db, doc_id, {"celery_task_id": task.id})
+
         db.refresh(doc)
         created_docs.append(doc)
 

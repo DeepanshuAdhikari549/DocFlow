@@ -91,6 +91,10 @@ def extract_mock_data(filename: str, file_type: str, file_size: int) -> dict:
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=10)
 def process_document(self, document_id: str):
+    # This allows the function to be called as a Celery task OR a normal function
+    # On Render Free Tier, we call it as a normal function (BackgroundTasks)
+    _real_self = self if hasattr(self, "retry") else None
+    
     print(f"Starting processing for document {document_id}")
     db = WorkerSession()
     try:
@@ -156,7 +160,12 @@ def process_document(self, document_id: str):
             "error_message": str(exc),
         })
         publish_event(document_id, "job_failed", 0, "job_failed", f"Error: {str(exc)}")
-        raise self.retry(exc=exc)
+        
+        # Only retry if running as a real Celery task
+        if _real_self:
+            raise _real_self.retry(exc=exc)
+        else:
+            print(f"❌ Background task failed: {exc}")
 
     finally:
         db.close()
