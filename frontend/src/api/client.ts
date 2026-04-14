@@ -51,7 +51,8 @@ export const finalizeDocument = async (id: string): Promise<Document> => {
 };
 
 export const exportDocument = (id: string, format: "json" | "csv") => {
-  window.open(`/api/documents/${id}/export?format=${format}`, "_blank");
+  const baseUrl = (import.meta.env.VITE_API_URL || "") + "/api";
+  window.open(`${baseUrl}/documents/${id}/export?format=${format}`, "_blank");
 };
 
 export const deleteDocument = async (id: string): Promise<{status: string, message: string}> => {
